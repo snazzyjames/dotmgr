@@ -10,6 +10,7 @@ var Denylist = ignore.Patterns{
 	".ssh/*.pem",
 	".gnupg/private-keys-*",
 	".aws/credentials",
+	".claude/.credentials.json",
 	"*.pem",
 	"*_rsa",
 	"*_ed25519",

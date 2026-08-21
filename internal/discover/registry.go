@@ -59,4 +59,8 @@ var Registry = []Entry{
 		"linux":  {"~/.config/gh/config.yml"},
 		"darwin": {"~/.config/gh/config.yml"},
 	}},
+	{Name: "claude", Paths: map[string][]string{
+		"linux":  {"~/.claude/CLAUDE.md", "~/.claude/settings.json", "~/.claude/settings.local.json", "~/.claude/keybindings.json"},
+		"darwin": {"~/.claude/CLAUDE.md", "~/.claude/settings.json", "~/.claude/settings.local.json", "~/.claude/keybindings.json"},
+	}},
 }

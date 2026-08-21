@@ -3,7 +3,7 @@
 A small CLI for tracking dotfiles in a git repo of your choosing and
 symlinking them back into place on any machine.
 
-`dotmgr` doesn't talk to GitHub, GitLab, or anywhere else directly — it shells
+`dotmgr` doesn't talk to GitHub, GitLab, or anywhere else directly: it shells
 out to `git` against whatever remote URL you give it. GitHub is the natural
 default (that's what these docs assume), but any git remote works.
 
@@ -43,7 +43,7 @@ dotmgr install
 | `dotmgr scan` | Suggest untracked files a known tool owns. |
 | `dotmgr push` / `dotmgr pull` | Commit-and-push / pull the local clone. |
 
-Every command that adds a file — `add` and `scan` — checks a built-in secrets
+Every command that adds a file (`add` and `scan`) checks a built-in secrets
 denylist first (private keys, credential files) independent of your own
 `.dotmgrignore`. Use `dotmgr add --force` to override it for one file.
 
@@ -61,10 +61,10 @@ Your dotfiles repo mirrors `$HOME` under `files/`:
 
 `dotmgr add ~/.gitconfig` moves it to `files/.gitconfig` and replaces the
 original with a symlink back to it. `dotmgr install` walks `files/` and
-recreates those symlinks under `$HOME` on whatever machine you run it on —
+recreates those symlinks under `$HOME` on whatever machine you run it on;
 anything already in the way is backed up (renamed with a timestamp suffix),
 never deleted.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
