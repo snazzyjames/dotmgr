@@ -1,7 +1,7 @@
 // Package ignore matches paths against gitignore-style patterns. It covers
-// the subset dotmgr's own default patterns use — a literal path, a
+// the subset dotmgr's own default patterns use: a literal path, a
 // single-segment glob (id_*, *.pem), and a "**/name" prefix meaning "at any
-// depth" — not the full gitignore spec.
+// depth"; not the full gitignore spec.
 package ignore
 
 import (

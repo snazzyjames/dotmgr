@@ -1,10 +1,10 @@
 // Package discover suggests files a well-known tool owns that aren't
-// tracked yet. It's a starting point, not a ceiling — nothing stops a user
+// tracked yet. It's a starting point, not a ceiling; nothing stops a user
 // from tracking files the registry doesn't know about via "dotmgr add".
 package discover
 
 // Entry describes where a tool's config lives, per OS ($HOME-relative,
-// "~/"-prefixed paths — files or directories).
+// "~/"-prefixed paths: files or directories).
 type Entry struct {
 	Name  string
 	Paths map[string][]string // runtime.GOOS -> paths

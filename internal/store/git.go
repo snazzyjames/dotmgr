@@ -1,5 +1,5 @@
 // Package store wraps the git operations dotmgr needs against a dotfiles
-// repo's local clone — dotmgr never talks to GitHub's (or anyone else's)
+// repo's local clone: dotmgr never talks to GitHub's (or anyone else's)
 // API directly, only to whatever git remote the user configured.
 package store
 

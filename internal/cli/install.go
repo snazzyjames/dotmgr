@@ -23,7 +23,7 @@ func cmdInstall(args []string) int {
 
 	step("Installing dotfiles")
 	if *dryRun {
-		info("dry run — no changes will be made")
+		info("dry run: no changes will be made")
 	}
 
 	res, err := linker.Install(cfg, *dryRun)
@@ -48,7 +48,7 @@ func cmdInstall(args []string) int {
 
 	fmt.Println()
 	if *dryRun {
-		fmt.Println("Dry run complete — no changes made.")
+		fmt.Println("Dry run complete: no changes made.")
 	} else {
 		fmt.Println("Done.")
 	}

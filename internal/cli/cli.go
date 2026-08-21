@@ -38,7 +38,7 @@ func Run(args []string) int {
 }
 
 func usage() {
-	fmt.Println(`dotmgr — track dotfiles in a git repo, symlink them into place anywhere.
+	fmt.Println(`dotmgr: track dotfiles in a git repo, symlink them into place anywhere.
 
 Usage:
   dotmgr init <remote>     Clone (or create) the dotfiles repo

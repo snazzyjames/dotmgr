@@ -37,7 +37,7 @@ func relToHome(abs string) (string, error) {
 		return "", err
 	}
 	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return "", fmt.Errorf("%s is not inside $HOME (%s) — only home-directory dotfiles are supported", abs, home)
+		return "", fmt.Errorf("%s is not inside $HOME (%s): only home-directory dotfiles are supported", abs, home)
 	}
 	return rel, nil
 }

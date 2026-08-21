@@ -1,5 +1,5 @@
 // Package config reads and writes dotmgr's own settings file
-// (~/.config/dotmgr/config.toml) — where the dotfiles repo lives locally
+// (~/.config/dotmgr/config.toml): where the dotfiles repo lives locally
 // and which git remote it tracks.
 package config
 
@@ -31,7 +31,7 @@ func DefaultPath() (string, error) {
 }
 
 // Load reads a config file. Only the flat [section]/key = "value" shape this
-// package itself writes is supported — it is not a general TOML parser.
+// package itself writes is supported; it is not a general TOML parser.
 func Load(path string) (*Config, error) {
 	f, err := os.Open(path)
 	if err != nil {

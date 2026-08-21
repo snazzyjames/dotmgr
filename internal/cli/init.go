@@ -10,11 +10,11 @@ import (
 	"github.com/snazzyjames/dotmgr/internal/store"
 )
 
-const defaultIgnore = `# Default .dotmgrignore — edit freely, this is a starting point.
+const defaultIgnore = `# Default .dotmgrignore: edit freely, this is a starting point.
 # Gitignore-style patterns. Checked by "dotmgr scan" (won't suggest a match)
 # and "dotmgr add" (refuses a match unless --force).
 
-# private key material — never the config that references it
+# private key material, never the config that references it
 .ssh/id_*
 .ssh/*.pem
 .gnupg/private-keys-*
@@ -85,7 +85,7 @@ func cmdInit(args []string) int {
 	}
 
 	if err := store.Clone(remote, repoPath); err != nil {
-		info("clone failed (likely an empty remote) — initializing a new repo instead")
+		info("clone failed (likely an empty remote), initializing a new repo instead")
 		if err := store.InitNew(repoPath, remote); err != nil {
 			errf("%v", err)
 			return 1

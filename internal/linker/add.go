@@ -30,11 +30,11 @@ func Add(cfg *config.Config, input string, force bool) (string, error) {
 		if terr == nil && under(target, filesDir) {
 			return "", fmt.Errorf("%s is already tracked (symlinked to %s)", input, target)
 		}
-		return "", fmt.Errorf("%s is a symlink — only real files are supported by add", input)
+		return "", fmt.Errorf("%s is a symlink: only real files are supported by add", input)
 	}
 
 	if info.IsDir() {
-		return "", fmt.Errorf("%s is a directory — add the files inside it individually", input)
+		return "", fmt.Errorf("%s is a directory: add the files inside it individually", input)
 	}
 	if !info.Mode().IsRegular() {
 		return "", fmt.Errorf("%s is not a regular file", input)
@@ -46,7 +46,7 @@ func Add(cfg *config.Config, input string, force bool) (string, error) {
 	}
 
 	if !force && secrets.IsDenied(rel) {
-		return "", fmt.Errorf("%s matches the built-in secrets denylist — re-run with --force if you're sure", rel)
+		return "", fmt.Errorf("%s matches the built-in secrets denylist, re-run with --force if you're sure", rel)
 	}
 
 	dest := filepath.Join(filesDir, rel)
@@ -61,7 +61,7 @@ func Add(cfg *config.Config, input string, force bool) (string, error) {
 		return "", fmt.Errorf("moving %s into the repo: %w", input, err)
 	}
 	if err := os.Symlink(dest, abs); err != nil {
-		return "", fmt.Errorf("moved to %s but failed to symlink back (%w) — restore with: mv %q %q", dest, err, dest, abs)
+		return "", fmt.Errorf("moved to %s but failed to symlink back (%w); restore with: mv %q %q", dest, err, dest, abs)
 	}
 
 	return rel, nil

@@ -21,7 +21,7 @@ func cmdStatus(args []string) int {
 		return 1
 	}
 	if len(tracked) == 0 {
-		info("nothing tracked yet — see: dotmgr add <path>")
+		info("nothing tracked yet, see: dotmgr add <path>")
 	}
 	for _, t := range tracked {
 		fmt.Printf("  %-8s %s\n", t.State, t.Rel)
