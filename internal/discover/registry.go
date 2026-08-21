@@ -63,4 +63,8 @@ var Registry = []Entry{
 		"linux":  {"~/.claude/CLAUDE.md", "~/.claude/settings.json", "~/.claude/settings.local.json", "~/.claude/keybindings.json"},
 		"darwin": {"~/.claude/CLAUDE.md", "~/.claude/settings.json", "~/.claude/settings.local.json", "~/.claude/keybindings.json"},
 	}},
+	{Name: "ghostty", Paths: map[string][]string{
+		"linux":  {"~/.config/ghostty"},
+		"darwin": {"~/.config/ghostty", "~/Library/Application Support/com.mitchellh.ghostty"},
+	}},
 }
