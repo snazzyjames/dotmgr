@@ -1,0 +1,25 @@
+[tools]
+go = "1.27"
+
+[env]
+CGO_ENABLED = "0"
+
+[tasks.build]
+description = "Build the dotmgr binary"
+run = "go build -o bin/dotmgr ./cmd/dotmgr"
+
+[tasks.install]
+description = "Install dotmgr to GOBIN"
+run = "go install ./cmd/dotmgr"
+
+[tasks.test]
+description = "Run tests"
+run = "go test ./..."
+
+[tasks.lint]
+description = "Vet and format check"
+run = "go vet ./... && gofmt -l ."
+
+[tasks.fmt]
+description = "Format source"
+run = "gofmt -w ."
