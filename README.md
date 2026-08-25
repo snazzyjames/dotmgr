@@ -99,10 +99,11 @@ go tool cover -html=coverage.out -o coverage.html
 Then open `coverage.html` in a browser. `coverage.out` and `coverage.html`
 are build artifacts, not checked in.
 
-Coverage today is concentrated in `internal/store`, `internal/secrets`, and
-`internal/linker`; `internal/config`, `internal/ignore`, `internal/discover`,
-and `internal/cli` don't have tests yet. This section will grow as that
-changes.
+Every package under `internal/` is covered at 85%+. `cmd/dotmgr` is the one
+exception: `main()` is a single `os.Exit(cli.Run(os.Args[1:]))` call, calling
+it directly from a test would kill the test process, and it has no logic of
+its own beyond what `internal/cli`'s tests already exercise, so it's left
+untested rather than built out with a separate binary-coverage pipeline.
 
 ## License
 
