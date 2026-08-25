@@ -15,6 +15,18 @@ Requires Go 1.22+ and `git` on `$PATH`.
 go install github.com/snazzyjames/dotmgr/cmd/dotmgr@latest
 ```
 
+## Build from source
+
+```
+git clone https://github.com/snazzyjames/dotmgr.git
+cd dotmgr
+go build -o dotmgr ./cmd/dotmgr
+```
+
+This produces a `dotmgr` binary in the current directory. Move it onto your
+`$PATH` (e.g. `sudo mv dotmgr /usr/local/bin/`), or run `go install ./cmd/dotmgr`
+from the repo root to install it to `$GOBIN` instead.
+
 ## Quickstart
 
 ```
