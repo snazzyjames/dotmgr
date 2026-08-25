@@ -77,6 +77,33 @@ recreates those symlinks under `$HOME` on whatever machine you run it on;
 anything already in the way is backed up (renamed with a timestamp suffix),
 never deleted.
 
+## Testing
+
+```
+go test ./...
+```
+
+To see a per-package coverage summary in the terminal:
+
+```
+go test ./... -cover
+```
+
+For a browsable, line-by-line HTML report:
+
+```
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out -o coverage.html
+```
+
+Then open `coverage.html` in a browser. `coverage.out` and `coverage.html`
+are build artifacts, not checked in.
+
+Coverage today is concentrated in `internal/store`, `internal/secrets`, and
+`internal/linker`; `internal/config`, `internal/ignore`, `internal/discover`,
+and `internal/cli` don't have tests yet. This section will grow as that
+changes.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
