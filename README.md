@@ -163,6 +163,7 @@ SSH.
 | `dotmgr status` | Show tracked files, broken links, and known-tool configs not yet tracked. |
 | `dotmgr scan` | Suggest untracked files a known tool owns. |
 | `dotmgr push` / `dotmgr pull` | Commit-and-push / pull the local clone. |
+| `dotmgr uninstall` | Remove dotmgr, keeping your current configs as regular files. See [Uninstalling](#uninstalling). |
 
 Every command that adds a file (`add` and `scan`) checks a built-in secrets
 denylist first (private keys, credential files) independent of your own
@@ -193,6 +194,50 @@ original with a symlink back to it. `dotmgr install` walks `files/` and
 recreates those symlinks under `$HOME` on whatever machine you run it on;
 anything already in the way is backed up (renamed with a timestamp suffix),
 never deleted.
+
+## Uninstalling
+
+`dotmgr uninstall` removes dotmgr from this machine. You choose what your
+configs look like afterward:
+
+| Command | Your configs afterward |
+|---|---|
+| `dotmgr uninstall` | **Exactly as they are right now.** Every symlink is replaced with a regular copy of the file it points to, including edits you haven't committed. Nothing about how your tools are configured changes. |
+| `dotmgr uninstall --restore-backups` | **What this machine had before dotmgr**, for every file `dotmgr install` backed up. Files with no backup keep their current version. |
+
+Add `--dry-run` to either one to see exactly what it would do without
+changing anything:
+
+```
+dotmgr uninstall --dry-run
+```
+
+`uninstall` also shows that plan and asks before changing anything. Then it:
+
+1. Replaces every dotmgr symlink in `$HOME` with a regular file: your current
+   version, or the pre-dotmgr backup if you passed `--restore-backups`.
+   Backups are the `<name>.bak.<timestamp>` files `dotmgr install` makes when
+   something is in the way. If a file has several, the oldest (the original)
+   is restored. Any backups not restored are left in place and listed so you
+   can delete them.
+2. Deletes the local clone and dotmgr's config.
+
+If the local clone has changes you haven't pushed, `uninstall` stops and asks
+you to run `dotmgr push` first so nothing is lost. Use `--force` to skip that
+check. If any file can't be restored, it stops before deleting anything; fix
+the error it prints and run it again.
+
+Your remote dotfiles repo is never touched, so other machines keep working.
+Two things are left for you to do yourself:
+
+- **Delete the `dotmgr` binary.** `uninstall` prints the exact `rm` command.
+- **Optional: delete the remote repo**, but only if no other machine still
+  uses it. On GitHub: open the repo → Settings → scroll to the bottom → Delete
+  this repository.
+
+Directories that dotmgr created for your files (e.g. `~/.config/fish/`) are
+left in place, since other programs may use them. Your SSH key isn't
+something dotmgr made, so it isn't touched either.
 
 ## Testing
 

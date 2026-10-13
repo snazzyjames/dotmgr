@@ -24,6 +24,23 @@ func Dirty(repoPath string) (bool, error) {
 	return strings.TrimSpace(out) != "", nil
 }
 
+// Unpushed reports whether repoPath has commits its remote doesn't. A repo
+// with no commits has nothing to push; one with commits but no upstream
+// branch has never been pushed.
+func Unpushed(repoPath string) (bool, error) {
+	if _, err := run(repoPath, "rev-parse", "--verify", "-q", "HEAD"); err != nil {
+		return false, nil
+	}
+	if _, err := run(repoPath, "rev-parse", "--abbrev-ref", "@{u}"); err != nil {
+		return true, nil
+	}
+	out, err := run(repoPath, "rev-list", "--count", "@{u}..HEAD")
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(out) != "0", nil
+}
+
 // CommitAll stages everything in repoPath and commits, if there's anything
 // to commit. A clean tree is not an error.
 func CommitAll(repoPath, message string) error {

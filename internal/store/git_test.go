@@ -291,3 +291,44 @@ func TestPull_NoRemote(t *testing.T) {
 		t.Fatal("expected error pulling in a repo with no remote configured, got nil")
 	}
 }
+
+func TestUnpushed(t *testing.T) {
+	remote := newBareRemote(t)
+	repo := filepath.Join(t.TempDir(), "repo")
+	if err := Clone(remote, repo); err != nil {
+		t.Fatal(err)
+	}
+	configureIdentity(t, repo)
+
+	if got, err := Unpushed(repo); err != nil || got {
+		t.Errorf("empty clone: Unpushed = %v, %v; want false, nil", got, err)
+	}
+
+	writeFile(t, filepath.Join(repo, "f.txt"), "hello\n")
+	if err := CommitAll(repo, "first"); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := Unpushed(repo); err != nil || !got {
+		t.Errorf("after commit: Unpushed = %v, %v; want true, nil", got, err)
+	}
+
+	if err := Push(repo); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := Unpushed(repo); err != nil || got {
+		t.Errorf("after push: Unpushed = %v, %v; want false, nil", got, err)
+	}
+}
+
+func TestUnpushed_NoUpstream(t *testing.T) {
+	repo := t.TempDir()
+	runGit(t, repo, "init", "-q")
+	configureIdentity(t, repo)
+	writeFile(t, filepath.Join(repo, "f.txt"), "hello\n")
+	if err := CommitAll(repo, "first"); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := Unpushed(repo); err != nil || !got {
+		t.Errorf("Unpushed = %v, %v; want true, nil for a never-pushed repo", got, err)
+	}
+}

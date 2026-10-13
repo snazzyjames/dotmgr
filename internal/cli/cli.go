@@ -27,6 +27,8 @@ func Run(args []string) int {
 		return cmdPush(rest)
 	case "pull":
 		return cmdPull(rest)
+	case "uninstall":
+		return cmdUninstall(rest)
 	case "-h", "--help", "help":
 		usage()
 		return 0
@@ -49,8 +51,15 @@ Usage:
   dotmgr scan              Suggest untracked files a known tool owns
   dotmgr push              Commit and push the dotfiles repo
   dotmgr pull              Pull the latest from the dotfiles repo
+  dotmgr uninstall         Remove dotmgr, keeping your current configs as regular files
 
 Flags:
   add --force              Override the secrets denylist for one file
-  install --dry-run, -n    Show what would happen without changing anything`)
+  install --dry-run, -n    Show what would happen without changing anything
+  uninstall --dry-run, -n  Show what would happen without changing anything
+  uninstall --restore-backups
+                           Go back to what you had before dotmgr instead of
+                           keeping your current configs (where a backup exists)
+  uninstall --yes, -y      Don't ask for confirmation
+  uninstall --force        Uninstall even with unpushed changes in the local clone`)
 }
