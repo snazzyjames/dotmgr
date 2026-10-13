@@ -157,9 +157,10 @@ SSH.
 | Command | Summary |
 |---|---|
 | [`dotmgr init <remote>`](#dotmgr-init) | Set up this machine with your dotfiles repo. |
-| [`dotmgr add <path>`](#dotmgr-add) | Start tracking a file. |
-| [`dotmgr remove <path>`](#dotmgr-remove) | Stop tracking a file. |
+| [`dotmgr add <path>`](#dotmgr-add) | Start tracking a file or directory. |
+| [`dotmgr remove <path>`](#dotmgr-remove) | Stop tracking a file or directory. |
 | [`dotmgr install`](#dotmgr-install) | Link every tracked file into place. |
+| [`dotmgr relink <path>`](#dotmgr-relink) | Fix a link a program replaced, keeping this machine's version. |
 | [`dotmgr status`](#dotmgr-status) | Show what's tracked and whether it's linked. |
 | [`dotmgr scan`](#dotmgr-scan) | Suggest config files you might want to track. |
 | [`dotmgr push`](#dotmgr-push) | Save your changes to the remote. |
@@ -183,26 +184,62 @@ and a `README.md` in the clone. These aren't pushed until you run
 #### dotmgr add
 
 ```
-dotmgr add [--force] <path>
+dotmgr add [--force] <file-or-directory>
+dotmgr add --link-dir <directory>
 ```
 
-Moves the file at `<path>` (e.g. `~/.gitconfig`) into the clone at the same
-location under `files/` (`files/.gitconfig`), then puts a symlink at the
+Moves the file at the given path (e.g. `~/.gitconfig`) into the clone at the
+same location under `files/` (`files/.gitconfig`), then puts a symlink at the
 original path pointing to it, so programs keep finding it where they expect.
-The file is only on this machine until you run `dotmgr push`. Only single
-files inside `$HOME` can be added, not directories. `--force` adds a file even
-if it matches the secrets denylist (see [Notes](#notes)).
+The file is only on this machine until you run `dotmgr push`. Paths can be
+absolute, start with `~/`, or be relative to the directory you're in, and
+must be inside `$HOME`.
+
+Given a directory (e.g. `dotmgr add ~/.config/kitty`), it does this for every
+file inside it, including subdirectories. Each file gets its own symlink; the
+directory itself stays a regular directory. Files matching `.dotmgrignore` or
+the secrets denylist are skipped and listed. Files the program creates in
+that directory later aren't tracked automatically: run the same `add` again
+to pick them up. Files already tracked are skipped, so that's always safe.
+
+`--force` adds a single file even if it matches the secrets denylist (see
+[Notes](#notes)). It doesn't work on directories, so a whole directory can't
+sweep secrets in by accident.
+
+**`--link-dir`** tracks a directory as a whole instead: the directory itself
+moves into the clone, and a single symlink replaces it. Use it for
+directories that hold only config you write yourself, like `~/.config/nvim`
+or `~/.config/kitty`. Compared to the default per-file mode:
+
+- Files the program creates there later are tracked automatically, and
+  deletes and renames sync too.
+- Programs that save by replacing a file (see [`status`](#dotmgr-status))
+  can't break the link.
+- But everything the program writes there is synced, so it's a poor fit for
+  directories that also hold caches, history, login tokens or other
+  machine-specific state. Use per-file mode for those.
+
+Safeguards: broad directories (`~/.config`, `~/.local/share`, `~/Library`,
+`~/.ssh` and similar) can't be linked; a directory currently holding a file
+on the secrets denylist is refused; and files that appear later and match
+`.dotmgrignore` or the denylist are kept out of git by a generated block in
+the repo's `.gitignore`. Files inside that were already tracked one by one
+are converted automatically. On other machines, `install` links the
+directory as a whole, backing up any directory the program already created
+there.
 
 #### dotmgr remove
 
 ```
-dotmgr remove <path>
+dotmgr remove <file-or-directory>
 ```
 
-The reverse of `add`: deletes the symlink at `<path>` and moves the file out
-of the clone's `files/` back to that path as a regular file. Run
-`dotmgr push` afterward to remove it from the remote too; other machines keep
-their copy until they're updated.
+The reverse of `add`: deletes the symlink and moves the file out of the
+clone's `files/` back to that path as a regular file. Given a directory, it
+does this for every tracked file inside it; given a directory linked with
+`--link-dir`, it moves the whole directory back. Run `dotmgr push` afterward to
+remove the files from the remote too; other machines keep their copies until
+they're updated.
 
 #### dotmgr install
 
@@ -211,11 +248,23 @@ dotmgr install [--dry-run]
 ```
 
 Creates a symlink in `$HOME` for every file under the clone's `files/`,
-creating any missing parent directories. If a different file is already at
+creating any missing parent directories. Directories added with `--link-dir`
+get a single symlink for the whole directory instead. If a different file is already at
 that path, it's renamed to `<name>.bak.<timestamp>` first, never deleted.
 Files already linked correctly are skipped, so it's safe to re-run. Use on a
 new machine after `init`, and after `pull` to link files added on other
 machines. `--dry-run` shows what would change.
+
+#### dotmgr relink
+
+```
+dotmgr relink <path>
+```
+
+Fixes a tracked file that `status` reports as `unlinked` or `diverged`,
+keeping this machine's version: the file at `<path>` replaces the repo's
+copy, and the symlink goes back in its place. Run `dotmgr push` afterward.
+If you'd rather keep the repo's version, use `dotmgr install` instead.
 
 #### dotmgr status
 
@@ -223,11 +272,21 @@ machines. `--dry-run` shows what would change.
 dotmgr status
 ```
 
-Read-only. Lists every tracked file with its state on this machine:
+Read-only. Lists every tracked file (and every directory linked with
+`--link-dir`) with its state on this machine, and explains how to fix any
+problem it finds:
 
 - `ok`: symlinked correctly.
-- `missing`: nothing at that path in `$HOME`; run `dotmgr install`.
-- `conflict`: a different file is there.
+- `missing`: nothing at that path in `$HOME` yet. Fix: `dotmgr install`.
+- `unlinked`: a regular file with the same content as the repo's copy is
+  where the symlink should be. Nothing is lost. Fix: `dotmgr relink <path>`.
+- `diverged`: a regular file with *different* content is where the symlink
+  should be, so its changes aren't reaching the repo. This usually means a
+  program saved by writing a new file and renaming it over the link. To keep
+  this machine's version, run `dotmgr relink <path>`. To keep the repo's
+  version, run `dotmgr install`, which backs this one up first.
+- `conflict`: something that isn't a file (e.g. a directory) is in the way.
+  Fix: `dotmgr install`, which backs it up.
 
 Then lists the same suggestions as `scan`.
 
@@ -304,13 +363,17 @@ After a few `add`s and a `push`, the repo looks like this. Everything under
   files/
     .gitconfig                  ->  ~/.gitconfig
     .config/fish/config.fish    ->  ~/.config/fish/config.fish
+    .config/kitty/              ->  ~/.config/kitty   (linked with --link-dir)
   .dotmgrignore                 # patterns dotmgr won't add or suggest
+  .dotmgrdirs                   # directories linked as a whole
+  .gitignore                    # generated block keeps junk out of linked dirs
   README.md
 ```
 
 `dotmgr add ~/.gitconfig` moves it to `files/.gitconfig` and replaces the
 original with a symlink back to it. `dotmgr install` walks `files/` and
-recreates those symlinks under `$HOME` on whatever machine you run it on;
+recreates those symlinks under `$HOME` on whatever machine you run it on,
+with one symlink per directory listed in `.dotmgrdirs`;
 anything already in the way is backed up (renamed with a timestamp suffix),
 never deleted.
 

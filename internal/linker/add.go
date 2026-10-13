@@ -13,7 +13,7 @@ import (
 // path under $HOME) and replaces it with a symlink back. It returns the
 // path relative to $HOME on success.
 func Add(cfg *config.Config, input string, force bool) (string, error) {
-	abs, err := resolveHomeInput(input)
+	abs, err := ResolveInput(input)
 	if err != nil {
 		return "", err
 	}
@@ -42,6 +42,9 @@ func Add(cfg *config.Config, input string, force bool) (string, error) {
 
 	rel, err := relToHome(abs)
 	if err != nil {
+		return "", err
+	}
+	if err := insideLinkedDir(cfg, abs); err != nil {
 		return "", err
 	}
 

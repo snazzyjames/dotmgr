@@ -85,3 +85,39 @@ func TestCmdAdd_FlagParseError(t *testing.T) {
 		t.Errorf("code = %d, want 2", code)
 	}
 }
+
+func TestCmdAdd_DirectoryRelativeToCwd(t *testing.T) {
+	home, repoPath := newCLIEnv(t)
+	cfg := &config.Config{}
+	cfg.Repo.Path = repoPath
+	writeConfig(t, cfg)
+	writeFile(t, filepath.Join(home, ".config", "kitty", "kitty.conf"), "font_size 14\n")
+	t.Chdir(filepath.Join(home, ".config"))
+
+	stdout, stderr, code := captureOutput(t, func() int { return cmdAdd([]string{"./kitty/"}) })
+	if code != 0 {
+		t.Fatalf("code = %d\nstdout: %s\nstderr: %s", code, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "~/.config/kitty/kitty.conf") {
+		t.Errorf("stdout = %q, want it to list the added file", stdout)
+	}
+	if !lexists(filepath.Join(repoPath, "files", ".config", "kitty", "kitty.conf")) {
+		t.Error("file not moved into the repo")
+	}
+}
+
+func TestCmdAdd_DirectoryRejectsForce(t *testing.T) {
+	home, repoPath := newCLIEnv(t)
+	cfg := &config.Config{}
+	cfg.Repo.Path = repoPath
+	writeConfig(t, cfg)
+	writeFile(t, filepath.Join(home, ".ssh", "id_ed25519"), "PRIVATE")
+
+	_, stderr, code := captureOutput(t, func() int { return cmdAdd([]string{"--force", "~/.ssh"}) })
+	if code != 1 {
+		t.Errorf("code = %d, want 1", code)
+	}
+	if !strings.Contains(stderr, "single file") {
+		t.Errorf("stderr = %q", stderr)
+	}
+}

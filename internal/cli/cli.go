@@ -27,6 +27,8 @@ func Run(args []string) int {
 		return cmdPush(rest)
 	case "pull":
 		return cmdPull(rest)
+	case "relink":
+		return cmdRelink(rest)
 	case "uninstall":
 		return cmdUninstall(rest)
 	case "-h", "--help", "help":
@@ -44,8 +46,9 @@ func usage() {
 
 Usage:
   dotmgr init <remote>     Clone the dotfiles repo (it can be empty)
-  dotmgr add <path>        Track a file: move it into the repo, symlink it back
-  dotmgr remove <path>     Reverse of add
+  dotmgr add <path>        Track a file, or every file in a directory
+  dotmgr remove <path>     Reverse of add (also takes a directory)
+  dotmgr relink <path>     Restore a link a program replaced, keeping this machine's version
   dotmgr install           Symlink every tracked file into place
   dotmgr status            Show tracked files, drift, and untracked candidates
   dotmgr scan              Suggest untracked files a known tool owns
@@ -55,6 +58,7 @@ Usage:
 
 Flags:
   add --force              Override the secrets denylist for one file
+  add --link-dir           Track a directory as a whole with one symlink
   install --dry-run, -n    Show what would happen without changing anything
   uninstall --dry-run, -n  Show what would happen without changing anything
   uninstall --restore-backups

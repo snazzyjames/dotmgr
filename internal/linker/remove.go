@@ -8,11 +8,11 @@ import (
 	"github.com/snazzyjames/dotmgr/internal/config"
 )
 
-// Remove reverses Add: it deletes the symlink at input and moves the real
-// file from the repo back into place. It returns the path relative to
-// $HOME on success.
+// Remove reverses Add (or LinkDir): it deletes the symlink at input and
+// moves the real file or directory from the repo back into place. It
+// returns the path relative to $HOME on success.
 func Remove(cfg *config.Config, input string) (string, error) {
-	abs, err := resolveHomeInput(input)
+	abs, err := ResolveInput(input)
 	if err != nil {
 		return "", err
 	}
@@ -22,6 +22,9 @@ func Remove(cfg *config.Config, input string) (string, error) {
 		return "", fmt.Errorf("no such file: %s", abs)
 	}
 	if info.Mode()&os.ModeSymlink == 0 {
+		if err := insideLinkedDir(cfg, abs); err != nil {
+			return "", err
+		}
 		return "", fmt.Errorf("%s is not a symlink managed by dotmgr", input)
 	}
 
@@ -45,6 +48,23 @@ func Remove(cfg *config.Config, input string) (string, error) {
 	}
 	if err := os.Rename(target, abs); err != nil {
 		return "", fmt.Errorf("moving %s back out of the repo: %w", rel, err)
+	}
+
+	// A directory linked as a whole is no longer one.
+	dirs, err := LinkedDirs(cfg)
+	if err != nil {
+		return "", err
+	}
+	for i, d := range dirs {
+		if d == rel {
+			if err := saveLinkedDirs(cfg, append(dirs[:i:i], dirs[i+1:]...)); err != nil {
+				return "", err
+			}
+			if err := SyncGitignore(cfg); err != nil {
+				return "", err
+			}
+			break
+		}
 	}
 
 	return rel, nil

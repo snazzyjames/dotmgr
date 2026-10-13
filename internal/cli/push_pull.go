@@ -1,6 +1,9 @@
 package cli
 
-import "github.com/snazzyjames/dotmgr/internal/store"
+import (
+	"github.com/snazzyjames/dotmgr/internal/linker"
+	"github.com/snazzyjames/dotmgr/internal/store"
+)
 
 func cmdPush(args []string) int {
 	cfg, err := loadConfig()
@@ -9,6 +12,11 @@ func cmdPush(args []string) int {
 		return 1
 	}
 	step("Pushing dotfiles")
+	// .dotmgrignore may have changed since a directory was linked.
+	if err := linker.SyncGitignore(cfg); err != nil {
+		errf("%v", err)
+		return 1
+	}
 	if err := store.Push(cfg.Repo.Path); err != nil {
 		errf("%v", err)
 		return 1

@@ -7,21 +7,24 @@ import (
 	"strings"
 )
 
-// resolveHomeInput accepts an absolute path, a "~/"-prefixed path, or a path
-// relative to $HOME, and returns an absolute path.
-func resolveHomeInput(input string) (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
+// ResolveInput turns a path given on the command line into an absolute path.
+// It accepts an absolute path, a "~/"-prefixed path (for when the shell
+// didn't expand it, e.g. it was quoted), or a path relative to the current
+// directory, like any other command-line tool.
+func ResolveInput(input string) (string, error) {
 	switch {
-	case input == "~":
-		input = home
-	case strings.HasPrefix(input, "~/"):
-		input = filepath.Join(home, strings.TrimPrefix(input, "~/"))
-	}
-	if !filepath.IsAbs(input) {
-		input = filepath.Join(home, input)
+	case input == "~" || strings.HasPrefix(input, "~/"):
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		input = filepath.Join(home, strings.TrimPrefix(input, "~"))
+	case !filepath.IsAbs(input):
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		input = filepath.Join(wd, input)
 	}
 	return filepath.Clean(input), nil
 }

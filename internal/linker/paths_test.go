@@ -6,8 +6,11 @@ import (
 	"testing"
 )
 
-func TestResolveHomeInput(t *testing.T) {
+func TestResolveInput(t *testing.T) {
 	home := newTestHome(t)
+	wd := t.TempDir()
+	t.Chdir(wd)
+	wd, _ = os.Getwd() // resolve any /private symlink, as Getwd does inside ResolveInput
 
 	tests := []struct {
 		name  string
@@ -17,18 +20,20 @@ func TestResolveHomeInput(t *testing.T) {
 		{"tilde alone", "~", home},
 		{"tilde slash prefix", "~/.gitconfig", filepath.Join(home, ".gitconfig")},
 		{"tilde slash nested", "~/.config/fish/config.fish", filepath.Join(home, ".config/fish/config.fish")},
-		{"bare relative", ".gitconfig", filepath.Join(home, ".gitconfig")},
+		{"bare relative is relative to cwd", "kitty", filepath.Join(wd, "kitty")},
+		{"dot-slash relative with trailing slash", "./kitty/", filepath.Join(wd, "kitty")},
+		{"dotdot relative", "../x", filepath.Join(filepath.Dir(wd), "x")},
 		{"relative with dotdot cleaned", "~/a/../b", filepath.Join(home, "b")},
 		{"absolute unchanged", "/etc/passwd", "/etc/passwd"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolveHomeInput(tt.input)
+			got, err := ResolveInput(tt.input)
 			if err != nil {
-				t.Fatalf("resolveHomeInput(%q): %v", tt.input, err)
+				t.Fatalf("ResolveInput(%q): %v", tt.input, err)
 			}
 			if got != tt.want {
-				t.Errorf("resolveHomeInput(%q) = %q, want %q", tt.input, got, tt.want)
+				t.Errorf("ResolveInput(%q) = %q, want %q", tt.input, got, tt.want)
 			}
 		})
 	}

@@ -66,17 +66,18 @@ func TestAdd_NestedPath(t *testing.T) {
 	}
 }
 
-func TestAdd_BareRelativeInput(t *testing.T) {
+func TestAdd_RelativeToCwd(t *testing.T) {
 	home := newTestHome(t)
 	cfg := newTestConfig(t)
-	writeFile(t, filepath.Join(home, ".gitconfig"), "content")
+	writeFile(t, filepath.Join(home, ".config", "kitty", "kitty.conf"), "content")
+	t.Chdir(filepath.Join(home, ".config"))
 
-	rel, err := Add(cfg, ".gitconfig", false)
+	rel, err := Add(cfg, "./kitty/kitty.conf", false)
 	if err != nil {
 		t.Fatalf("Add: %v", err)
 	}
-	if rel != ".gitconfig" {
-		t.Errorf("rel = %q, want %q", rel, ".gitconfig")
+	if want := filepath.Join(".config", "kitty", "kitty.conf"); rel != want {
+		t.Errorf("rel = %q, want %q", rel, want)
 	}
 }
 
