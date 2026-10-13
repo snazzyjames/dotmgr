@@ -156,18 +156,27 @@ SSH.
 
 | Command | Does |
 |---|---|
-| `dotmgr init <remote>` | Clone the dotfiles repo (it can be empty), write local config. |
-| `dotmgr add <path>` | Move a file into the repo, symlink it back. |
-| `dotmgr remove <path>` | Reverse of add. |
-| `dotmgr install` | Symlink every tracked file into place; back up conflicts. |
-| `dotmgr status` | Show tracked files, broken links, and known-tool configs not yet tracked. |
-| `dotmgr scan` | Suggest untracked files a known tool owns. |
-| `dotmgr push` / `dotmgr pull` | Commit-and-push / pull the local clone. |
-| `dotmgr uninstall` | Remove dotmgr, keeping your current configs as regular files. See [Uninstalling](#uninstalling). |
+| `dotmgr init <remote>` | Clones your dotfiles repo from `<remote>` to `~/.local/share/dotmgr/repo` and saves the remote URL and clone location to `~/.config/dotmgr/config.toml`. If the repo is empty or new, it also creates `files/`, a default `.dotmgrignore` and a `README.md` in the clone. These aren't pushed until you run `dotmgr push`. Run once per machine. |
+| `dotmgr add <path>` | Moves the file at `<path>` (e.g. `~/.gitconfig`) into the clone at the same location under `files/` (`files/.gitconfig`), then puts a symlink at the original path pointing to it, so programs keep finding it where they expect. The file is only on this machine until you run `dotmgr push`. Only single files inside `$HOME` can be added, not directories. |
+| `dotmgr remove <path>` | The reverse of `add`: deletes the symlink at `<path>` and moves the file out of the clone's `files/` back to that path as a regular file. Run `dotmgr push` afterward to remove it from the remote too; other machines keep their copy until they're updated. |
+| `dotmgr install` | Creates a symlink in `$HOME` for every file under the clone's `files/`, creating any missing parent directories. If a different file is already at that path, it's renamed to `<name>.bak.<timestamp>` first, never deleted. Files already linked correctly are skipped, so it's safe to re-run. Use on a new machine after `init`, and after `pull` to link files added on other machines. `--dry-run` shows what would change. |
+| `dotmgr status` | Read-only. Lists every tracked file with its state on this machine: `ok` (symlinked correctly), `missing` (nothing at that path in `$HOME`, so run `install`), or `conflict` (a different file is there). Then lists the same suggestions as `scan`. |
+| `dotmgr scan` | Read-only. Looks in the usual config locations of tools dotmgr knows about (git, fish, zsh, bash, ssh, neovim, vim, tmux, starship, alacritty, kitty, gh, ghostty, Claude Code) and lists files that exist on this machine but aren't tracked yet. It doesn't add anything; run `dotmgr add` on the ones you want. Files matching `.dotmgrignore` or the secrets denylist are never suggested. |
+| `dotmgr push` | Commits every change in the clone (files added, removed or edited through their symlinks) with the message `dotmgr: sync`, then pushes to your remote. This is the only command that sends anything to the remote. |
+| `dotmgr pull` | Runs `git pull` in the clone to fetch changes pushed from other machines. Edits to files that are already linked take effect immediately. Files that are new to this machine need `dotmgr install` to be linked into `$HOME`. |
+| `dotmgr uninstall` | Replaces every dotmgr symlink in `$HOME` with a regular copy of the file, then deletes the clone and the config. Your configs stay as they are now (or go back to their pre-dotmgr versions with `--restore-backups`), and the remote is never touched. See [Uninstalling](#uninstalling). |
 
-Every command that adds a file (`add` and `scan`) checks a built-in secrets
-denylist first (private keys, credential files) independent of your own
-`.dotmgrignore`. Use `dotmgr add --force` to override it for one file.
+Paths above assume the defaults. If `$XDG_DATA_HOME` or `$XDG_CONFIG_HOME` is
+set, the clone and the config live under those instead.
+
+Because tracked files in `$HOME` are symlinks into the clone, editing
+`~/.gitconfig` edits the clone's copy directly. There's no separate "save"
+step; `dotmgr push` picks up the change.
+
+`dotmgr add` checks a built-in secrets denylist (private keys, credential
+files) before moving anything, independent of your own `.dotmgrignore`, and
+`scan` never suggests those files. Use `dotmgr add --force` to override it for
+one file.
 
 ## How tracking works
 
