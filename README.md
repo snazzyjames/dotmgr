@@ -11,12 +11,12 @@ default (that's what these docs assume), but any git remote works.
 
 - [Install](#install)
 - [Build from source](#build-from-source)
-- [Updating](#updating)
 - [Quickstart](#quickstart)
 - [Commands](#commands)
   - [Command details](#command-details)
   - [Notes](#notes)
 - [How tracking works](#how-tracking-works)
+- [Updating](#updating)
 - [Uninstalling](#uninstalling)
 - [Testing](#testing)
 - [Setting up an SSH key](#setting-up-an-ssh-key)
@@ -41,24 +41,6 @@ go build -o dotmgr ./cmd/dotmgr
 This produces a `dotmgr` binary in the current directory. Move it onto your
 `$PATH` (e.g. `sudo mv dotmgr /usr/local/bin/`), or run `go install ./cmd/dotmgr`
 from the repo root to install it to `$GOBIN` instead.
-
-## Updating
-
-```
-dotmgr update                        # latest published version
-dotmgr update --version v1.2.0       # a specific version
-dotmgr update --from ~/Code/dotmgr   # your local checkout
-```
-
-`update` rebuilds dotmgr with Go (so Go still needs to be on your `$PATH`)
-and replaces the copy you ran, wherever it's installed. Check what you have
-with `dotmgr version`.
-
-If dotmgr is installed somewhere you need `sudo` to write to, like
-`/usr/local/bin`, `update` builds the new version and then prints a
-`sudo install ...` command to copy it into place. Running `sudo dotmgr update`
-directly often fails, because `sudo` resets `$PATH` and can't find Go if it's
-installed per-user (e.g. through mise, asdf or Homebrew).
 
 ## Quickstart
 
@@ -356,6 +338,24 @@ recreates those symlinks under `$HOME` on whatever machine you run it on,
 with one symlink per directory listed in `.dotmgrdirs`;
 anything already in the way is backed up (renamed with a timestamp suffix),
 never deleted.
+
+## Updating
+
+```
+dotmgr update                        # latest published version
+dotmgr update --version v1.2.0       # a specific version
+dotmgr update --from ~/Code/dotmgr   # your local checkout
+```
+
+`update` rebuilds dotmgr with Go (so Go still needs to be on your `$PATH`)
+and replaces the copy you ran, wherever it's installed. Check what you have
+with `dotmgr version`.
+
+If dotmgr is installed somewhere you need `sudo` to write to, like
+`/usr/local/bin`, `update` builds the new version and then prints a
+`sudo install ...` command to copy it into place. Running `sudo dotmgr update`
+directly often fails, because `sudo` resets `$PATH` and can't find Go if it's
+installed per-user (e.g. through mise, asdf or Homebrew).
 
 ## Uninstalling
 
