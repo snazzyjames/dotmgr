@@ -7,6 +7,21 @@ symlinking them back into place on any machine.
 out to `git` against whatever remote URL you give it. GitHub is the natural
 default (that's what these docs assume), but any git remote works.
 
+## Contents
+
+- [Install](#install)
+- [Build from source](#build-from-source)
+- [Updating](#updating)
+- [Quickstart](#quickstart)
+- [Commands](#commands)
+  - [Command details](#command-details)
+  - [Notes](#notes)
+- [How tracking works](#how-tracking-works)
+- [Uninstalling](#uninstalling)
+- [Testing](#testing)
+- [Setting up an SSH key](#setting-up-an-ssh-key)
+- [License](#license)
+
 ## Install
 
 Requires Go 1.27+ and `git` on `$PATH`.
