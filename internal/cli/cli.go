@@ -29,6 +29,10 @@ func Run(args []string) int {
 		return cmdPull(rest)
 	case "relink":
 		return cmdRelink(rest)
+	case "update":
+		return cmdUpdate(rest)
+	case "version", "--version":
+		return cmdVersion(rest)
 	case "uninstall":
 		return cmdUninstall(rest)
 	case "-h", "--help", "help":
@@ -54,12 +58,16 @@ Usage:
   dotmgr scan              Suggest untracked files a known tool owns
   dotmgr push              Commit and push the dotfiles repo
   dotmgr pull              Pull the latest from the dotfiles repo
+  dotmgr update            Rebuild dotmgr and replace this installed copy
+  dotmgr version           Show the installed version
   dotmgr uninstall         Remove dotmgr, keeping your current configs as regular files
 
 Flags:
   add --force              Override the secrets denylist for one file
   add --link-dir           Track a directory as a whole with one symlink
   install --dry-run, -n    Show what would happen without changing anything
+  update --version <v>     Build a specific published version (default: latest)
+  update --from <dir>      Build from a local dotmgr checkout instead
   uninstall --dry-run, -n  Show what would happen without changing anything
   uninstall --restore-backups
                            Go back to what you had before dotmgr instead of

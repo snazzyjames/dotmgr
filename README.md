@@ -27,6 +27,24 @@ This produces a `dotmgr` binary in the current directory. Move it onto your
 `$PATH` (e.g. `sudo mv dotmgr /usr/local/bin/`), or run `go install ./cmd/dotmgr`
 from the repo root to install it to `$GOBIN` instead.
 
+## Updating
+
+```
+dotmgr update                        # latest published version
+dotmgr update --version v1.2.0       # a specific version
+dotmgr update --from ~/Code/dotmgr   # your local checkout
+```
+
+`update` rebuilds dotmgr with Go (so Go still needs to be on your `$PATH`)
+and replaces the copy you ran, wherever it's installed. Check what you have
+with `dotmgr version`.
+
+If dotmgr is installed somewhere you need `sudo` to write to, like
+`/usr/local/bin`, `update` builds the new version and then prints a
+`sudo install ...` command to copy it into place. Running `sudo dotmgr update`
+directly often fails, because `sudo` resets `$PATH` and can't find Go if it's
+installed per-user (e.g. through mise, asdf or Homebrew).
+
 ## Quickstart
 
 dotmgr stores your dotfiles in a git repo that you own. That repo is the
@@ -165,6 +183,8 @@ SSH.
 | [`dotmgr scan`](#dotmgr-scan) | Suggest config files you might want to track. |
 | [`dotmgr push`](#dotmgr-push) | Save your changes to the remote. |
 | [`dotmgr pull`](#dotmgr-pull) | Get changes made on other machines. |
+| [`dotmgr update`](#dotmgr-update) | Rebuild dotmgr and replace the installed copy. |
+| [`dotmgr version`](#dotmgr-version) | Show which version is installed. |
 | [`dotmgr uninstall`](#dotmgr-uninstall) | Remove dotmgr, keeping your configs. |
 
 ### Command details
@@ -321,6 +341,36 @@ dotmgr pull
 Runs `git pull` in the clone to fetch changes pushed from other machines.
 Edits to files that are already linked take effect immediately. Files that
 are new to this machine need `dotmgr install` to be linked into `$HOME`.
+
+#### dotmgr update
+
+```
+dotmgr update [--version <version> | --from <checkout>]
+```
+
+Builds a new dotmgr in a temporary directory, then swaps it in for the
+binary you ran (following symlinks to the real file). By default it builds the
+latest published version with `go install`; `--version` picks a specific
+one, and `--from` builds a local clone of this repo instead, which is handy
+if you're working on dotmgr itself. `--from` refuses directories that aren't
+a dotmgr checkout.
+
+The swap happens only after a successful build, and it's atomic: the new
+binary is written next to the old one and renamed over it. A failed build or
+copy leaves the installed dotmgr unchanged. If the install directory isn't
+writable, the new build is kept and `update` prints the `sudo install`
+command to finish. Doesn't touch your dotfiles, the clone or the config. See
+[Updating](#updating).
+
+#### dotmgr version
+
+```
+dotmgr version
+```
+
+Prints the installed version. Builds from `go install ...@<version>` show
+that version; builds from a checkout show the commit they were built from,
+with `+dirty` if it had uncommitted changes.
 
 #### dotmgr uninstall
 
