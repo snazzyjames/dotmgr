@@ -22,10 +22,16 @@ type Config struct {
 }
 
 // DefaultPath returns ~/.config/dotmgr/config.toml, honoring $XDG_CONFIG_HOME.
+// It deliberately avoids os.UserConfigDir, which on macOS returns
+// ~/Library/Application Support and ignores $XDG_CONFIG_HOME.
 func DefaultPath() (string, error) {
-	dir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
+	dir := os.Getenv("XDG_CONFIG_HOME")
+	if dir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		dir = filepath.Join(home, ".config")
 	}
 	return filepath.Join(dir, "dotmgr", "config.toml"), nil
 }

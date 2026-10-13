@@ -102,34 +102,6 @@ func TestClone_InvalidRemote(t *testing.T) {
 	}
 }
 
-func TestInitNew(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "repo")
-	remote := "https://example.invalid/dotfiles.git"
-
-	if err := InitNew(path, remote); err != nil {
-		t.Fatalf("InitNew: %v", err)
-	}
-	if _, err := os.Stat(filepath.Join(path, ".git")); err != nil {
-		t.Errorf("expected %s/.git to exist: %v", path, err)
-	}
-
-	got := strings.TrimSpace(runGit(t, path, "remote", "get-url", "origin"))
-	if got != remote {
-		t.Errorf("origin remote = %q, want %q", got, remote)
-	}
-}
-
-func TestInitNew_RemoteAlreadyExists(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "repo")
-	if err := InitNew(path, "https://example.invalid/a.git"); err != nil {
-		t.Fatalf("first InitNew: %v", err)
-	}
-	err := InitNew(path, "https://example.invalid/b.git")
-	if err == nil {
-		t.Fatal("expected error re-initializing an existing origin, got nil")
-	}
-}
-
 func TestDirty(t *testing.T) {
 	dir := t.TempDir()
 	runGit(t, dir, "init", "-q", dir)

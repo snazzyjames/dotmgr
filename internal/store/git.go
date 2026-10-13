@@ -15,19 +15,6 @@ func Clone(remote, path string) error {
 	return err
 }
 
-// InitNew git-inits an empty local repo at path and points "origin" at
-// remote, for the case where remote is a freshly created, still-empty repo
-// that "git clone" refuses to treat as a real clone target.
-func InitNew(path, remote string) error {
-	if _, err := run("", "init", "-q", path); err != nil {
-		return err
-	}
-	if _, err := run(path, "remote", "add", "origin", remote); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Dirty reports whether repoPath has uncommitted changes.
 func Dirty(repoPath string) (bool, error) {
 	out, err := run(repoPath, "status", "--porcelain")

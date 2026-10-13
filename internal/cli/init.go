@@ -84,15 +84,15 @@ func cmdInit(args []string) int {
 		return 1
 	}
 
+	// git clones an empty remote fine, so a failure here is a real problem
+	// (bad URL, auth, network) and should stop init rather than leave a
+	// local repo pointed at a remote that doesn't work.
 	if err := store.Clone(remote, repoPath); err != nil {
-		info("clone failed (likely an empty remote), initializing a new repo instead")
-		if err := store.InitNew(repoPath, remote); err != nil {
-			errf("%v", err)
-			return 1
-		}
-	} else {
-		info("cloned existing repo")
+		errf("%v", err)
+		info("check the remote URL and that you can reach it, e.g.: git ls-remote %s", remote)
+		return 1
 	}
+	info("cloned repo")
 
 	filesDir := filepath.Join(repoPath, "files")
 	if err := os.MkdirAll(filesDir, 0o755); err != nil {

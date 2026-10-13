@@ -41,7 +41,7 @@ func usage() {
 	fmt.Println(`dotmgr: track dotfiles in a git repo, symlink them into place anywhere.
 
 Usage:
-  dotmgr init <remote>     Clone (or create) the dotfiles repo
+  dotmgr init <remote>     Clone the dotfiles repo (it can be empty)
   dotmgr add <path>        Track a file: move it into the repo, symlink it back
   dotmgr remove <path>     Reverse of add
   dotmgr install           Symlink every tracked file into place

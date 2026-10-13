@@ -62,8 +62,8 @@ func TestCmdInit_ExistingRemoteWithOwnFiles(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("code = %d, want 0: %s", code, stdout)
 	}
-	if !strings.Contains(stdout, "cloned existing repo") {
-		t.Errorf("stdout = %q, want it to mention cloning the existing repo", stdout)
+	if !strings.Contains(stdout, "cloned repo") {
+		t.Errorf("stdout = %q, want it to mention cloning the repo", stdout)
 	}
 
 	cfgPath, _ := config.DefaultPath()
@@ -79,26 +79,24 @@ func TestCmdInit_ExistingRemoteWithOwnFiles(t *testing.T) {
 	}
 }
 
-func TestCmdInit_CloneFailureFallsBackToInitNew(t *testing.T) {
-	newCLIEnv(t)
+func TestCmdInit_CloneFailureIsAnError(t *testing.T) {
+	_, repoPath := newCLIEnv(t)
 	remote := filepath.Join(t.TempDir(), "not-a-real-remote")
 
-	stdout, _, code := captureOutput(t, func() int { return cmdInit([]string{remote}) })
-	if code != 0 {
-		t.Fatalf("code = %d, want 0: %s", code, stdout)
+	_, stderr, code := captureOutput(t, func() int { return cmdInit([]string{remote}) })
+	if code != 1 {
+		t.Fatalf("code = %d, want 1", code)
 	}
-	if !strings.Contains(stdout, "clone failed") {
-		t.Errorf("stdout = %q, want it to mention the fallback", stdout)
+	if !strings.Contains(stderr, "git clone") {
+		t.Errorf("stderr = %q, want it to report the failing clone", stderr)
 	}
 
 	cfgPath, _ := config.DefaultPath()
-	cfg, err := config.Load(cfgPath)
-	if err != nil {
-		t.Fatal(err)
+	if _, err := os.Stat(cfgPath); !os.IsNotExist(err) {
+		t.Errorf("config should not be written after a failed clone, stat err = %v", err)
 	}
-	got := strings.TrimSpace(runGit(t, cfg.Repo.Path, "remote", "get-url", "origin"))
-	if got != remote {
-		t.Errorf("origin = %q, want %q", got, remote)
+	if _, err := os.Stat(repoPath); !os.IsNotExist(err) {
+		t.Errorf("no local repo should be left behind after a failed clone, stat err = %v", err)
 	}
 }
 

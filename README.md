@@ -9,7 +9,7 @@ default (that's what these docs assume), but any git remote works.
 
 ## Install
 
-Requires Go 1.22+ and `git` on `$PATH`.
+Requires Go 1.27+ and `git` on `$PATH`.
 
 ```
 go install github.com/snazzyjames/dotmgr/cmd/dotmgr@latest
@@ -47,7 +47,7 @@ dotmgr install
 
 | Command | Does |
 |---|---|
-| `dotmgr init <remote>` | Clone (or create) the dotfiles repo, write local config. |
+| `dotmgr init <remote>` | Clone the dotfiles repo (it can be empty), write local config. |
 | `dotmgr add <path>` | Move a file into the repo, symlink it back. |
 | `dotmgr remove <path>` | Reverse of add. |
 | `dotmgr install` | Symlink every tracked file into place; back up conflicts. |
