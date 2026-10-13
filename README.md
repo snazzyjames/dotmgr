@@ -154,17 +154,127 @@ SSH.
 
 ## Commands
 
-| Command | Does |
+| Command | Summary |
 |---|---|
-| `dotmgr init <remote>` | Clones your dotfiles repo from `<remote>` to `~/.local/share/dotmgr/repo` and saves the remote URL and clone location to `~/.config/dotmgr/config.toml`. If the repo is empty or new, it also creates `files/`, a default `.dotmgrignore` and a `README.md` in the clone. These aren't pushed until you run `dotmgr push`. Run once per machine. |
-| `dotmgr add <path>` | Moves the file at `<path>` (e.g. `~/.gitconfig`) into the clone at the same location under `files/` (`files/.gitconfig`), then puts a symlink at the original path pointing to it, so programs keep finding it where they expect. The file is only on this machine until you run `dotmgr push`. Only single files inside `$HOME` can be added, not directories. |
-| `dotmgr remove <path>` | The reverse of `add`: deletes the symlink at `<path>` and moves the file out of the clone's `files/` back to that path as a regular file. Run `dotmgr push` afterward to remove it from the remote too; other machines keep their copy until they're updated. |
-| `dotmgr install` | Creates a symlink in `$HOME` for every file under the clone's `files/`, creating any missing parent directories. If a different file is already at that path, it's renamed to `<name>.bak.<timestamp>` first, never deleted. Files already linked correctly are skipped, so it's safe to re-run. Use on a new machine after `init`, and after `pull` to link files added on other machines. `--dry-run` shows what would change. |
-| `dotmgr status` | Read-only. Lists every tracked file with its state on this machine: `ok` (symlinked correctly), `missing` (nothing at that path in `$HOME`, so run `install`), or `conflict` (a different file is there). Then lists the same suggestions as `scan`. |
-| `dotmgr scan` | Read-only. Looks in the usual config locations of tools dotmgr knows about (git, fish, zsh, bash, ssh, neovim, vim, tmux, starship, alacritty, kitty, gh, ghostty, Claude Code) and lists files that exist on this machine but aren't tracked yet. It doesn't add anything; run `dotmgr add` on the ones you want. Files matching `.dotmgrignore` or the secrets denylist are never suggested. |
-| `dotmgr push` | Commits every change in the clone (files added, removed or edited through their symlinks) with the message `dotmgr: sync`, then pushes to your remote. This is the only command that sends anything to the remote. |
-| `dotmgr pull` | Runs `git pull` in the clone to fetch changes pushed from other machines. Edits to files that are already linked take effect immediately. Files that are new to this machine need `dotmgr install` to be linked into `$HOME`. |
-| `dotmgr uninstall` | Replaces every dotmgr symlink in `$HOME` with a regular copy of the file, then deletes the clone and the config. Your configs stay as they are now (or go back to their pre-dotmgr versions with `--restore-backups`), and the remote is never touched. See [Uninstalling](#uninstalling). |
+| [`dotmgr init <remote>`](#dotmgr-init) | Set up this machine with your dotfiles repo. |
+| [`dotmgr add <path>`](#dotmgr-add) | Start tracking a file. |
+| [`dotmgr remove <path>`](#dotmgr-remove) | Stop tracking a file. |
+| [`dotmgr install`](#dotmgr-install) | Link every tracked file into place. |
+| [`dotmgr status`](#dotmgr-status) | Show what's tracked and whether it's linked. |
+| [`dotmgr scan`](#dotmgr-scan) | Suggest config files you might want to track. |
+| [`dotmgr push`](#dotmgr-push) | Save your changes to the remote. |
+| [`dotmgr pull`](#dotmgr-pull) | Get changes made on other machines. |
+| [`dotmgr uninstall`](#dotmgr-uninstall) | Remove dotmgr, keeping your configs. |
+
+### Command details
+
+#### dotmgr init
+
+```
+dotmgr init <remote>
+```
+
+Clones your dotfiles repo from `<remote>` to `~/.local/share/dotmgr/repo` and
+saves the remote URL and clone location to `~/.config/dotmgr/config.toml`. If
+the repo is empty or new, it also creates `files/`, a default `.dotmgrignore`
+and a `README.md` in the clone. These aren't pushed until you run
+`dotmgr push`. Run once per machine.
+
+#### dotmgr add
+
+```
+dotmgr add [--force] <path>
+```
+
+Moves the file at `<path>` (e.g. `~/.gitconfig`) into the clone at the same
+location under `files/` (`files/.gitconfig`), then puts a symlink at the
+original path pointing to it, so programs keep finding it where they expect.
+The file is only on this machine until you run `dotmgr push`. Only single
+files inside `$HOME` can be added, not directories. `--force` adds a file even
+if it matches the secrets denylist (see [Notes](#notes)).
+
+#### dotmgr remove
+
+```
+dotmgr remove <path>
+```
+
+The reverse of `add`: deletes the symlink at `<path>` and moves the file out
+of the clone's `files/` back to that path as a regular file. Run
+`dotmgr push` afterward to remove it from the remote too; other machines keep
+their copy until they're updated.
+
+#### dotmgr install
+
+```
+dotmgr install [--dry-run]
+```
+
+Creates a symlink in `$HOME` for every file under the clone's `files/`,
+creating any missing parent directories. If a different file is already at
+that path, it's renamed to `<name>.bak.<timestamp>` first, never deleted.
+Files already linked correctly are skipped, so it's safe to re-run. Use on a
+new machine after `init`, and after `pull` to link files added on other
+machines. `--dry-run` shows what would change.
+
+#### dotmgr status
+
+```
+dotmgr status
+```
+
+Read-only. Lists every tracked file with its state on this machine:
+
+- `ok`: symlinked correctly.
+- `missing`: nothing at that path in `$HOME`; run `dotmgr install`.
+- `conflict`: a different file is there.
+
+Then lists the same suggestions as `scan`.
+
+#### dotmgr scan
+
+```
+dotmgr scan
+```
+
+Read-only. Looks in the usual config locations of tools dotmgr knows about
+(git, fish, zsh, bash, ssh, neovim, vim, tmux, starship, alacritty, kitty, gh,
+ghostty, Claude Code) and lists files that exist on this machine but aren't
+tracked yet. It doesn't add anything; run `dotmgr add` on the ones you want.
+Files matching `.dotmgrignore` or the secrets denylist are never suggested.
+
+#### dotmgr push
+
+```
+dotmgr push
+```
+
+Commits every change in the clone (files added, removed or edited through
+their symlinks) with the message `dotmgr: sync`, then pushes to your remote.
+This is the only command that sends anything to the remote.
+
+#### dotmgr pull
+
+```
+dotmgr pull
+```
+
+Runs `git pull` in the clone to fetch changes pushed from other machines.
+Edits to files that are already linked take effect immediately. Files that
+are new to this machine need `dotmgr install` to be linked into `$HOME`.
+
+#### dotmgr uninstall
+
+```
+dotmgr uninstall [--dry-run] [--restore-backups] [--yes] [--force]
+```
+
+Replaces every dotmgr symlink in `$HOME` with a regular copy of the file, then
+deletes the clone and the config. Your configs stay as they are now (or go
+back to their pre-dotmgr versions with `--restore-backups`), and the remote is
+never touched. See [Uninstalling](#uninstalling).
+
+### Notes
 
 Paths above assume the defaults. If `$XDG_DATA_HOME` or `$XDG_CONFIG_HOME` is
 set, the clone and the config live under those instead.
