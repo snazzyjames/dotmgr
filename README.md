@@ -49,7 +49,8 @@ dotmgr push
 
 Any URL `git clone` accepts works. The example above uses SSH, which needs an
 SSH key added to your GitHub account but won't prompt for credentials on
-`push`/`pull`. If you haven't set up SSH keys on this machine, use the HTTPS
+`push`/`pull` (see [Setting up an SSH key](#setting-up-an-ssh-key) if you've
+never made one). If you'd rather skip SSH keys on this machine, use the HTTPS
 URL instead:
 
 ```
@@ -65,6 +66,91 @@ On a new machine, run `init` with the same repo URL, then `install`:
 dotmgr init git@github.com:<your-username>/<your-repo>.git
 dotmgr install
 ```
+
+## Setting up an SSH key
+
+An SSH key lets git prove to GitHub that it's you, without a password. You
+need one per machine. These steps are for macOS and Linux; GitHub's
+[SSH docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+cover Windows and troubleshooting.
+
+1. **Check whether you already have one.** If this lists a file ending in
+   `.pub` (e.g. `id_ed25519.pub`), you can skip to step 4.
+
+   ```
+   ls ~/.ssh
+   ```
+
+2. **Generate a key.** The text after `-C` is just a label stored with the
+   key, not a login. Something that names the machine works well, and it
+   doesn't have to be your GitHub email. Press Enter to accept the default
+   file location, then choose a passphrase (recommended) or leave it empty.
+
+   ```
+   ssh-keygen -t ed25519 -C "your-name@this-machine"
+   ```
+
+3. **Load the key so you aren't asked for the passphrase every time.**
+
+   **macOS**
+
+   This also saves the passphrase in your keychain:
+
+   ```
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+   ```
+
+   To keep the key loaded after a restart, add this to `~/.ssh/config`
+   (create the file if it doesn't exist):
+
+   ```
+   Host github.com
+     AddKeysToAgent yes
+     UseKeychain yes
+     IdentityFile ~/.ssh/id_ed25519
+   ```
+
+   **Linux**
+
+   ```
+   ssh-add ~/.ssh/id_ed25519
+   ```
+
+4. **Copy the public key** (the `.pub` file; never share the file without
+   `.pub`):
+
+   **macOS**
+
+   This copies the key to your clipboard:
+
+   ```
+   pbcopy < ~/.ssh/id_ed25519.pub
+   ```
+
+   **Linux**
+
+   This prints the key; select and copy the whole line it prints:
+
+   ```
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+5. **Add it to GitHub.** Go to GitHub → Settings → SSH and GPG keys → New SSH
+   key, paste it in, and give it a title naming this machine.
+
+6. **Test it.** The first time, you'll be asked whether to trust
+   `github.com`; type `yes`. A message saying "You've successfully
+   authenticated" means it worked.
+
+   ```
+   ssh -T git@github.com
+   ```
+
+You can now use the `git@github.com:...` URL with `dotmgr init`.
+
+dotmgr never copies private keys (`~/.ssh/id_*`) into your dotfiles repo, so
+each new machine needs its own key from these steps before it can clone over
+SSH.
 
 ## Commands
 
